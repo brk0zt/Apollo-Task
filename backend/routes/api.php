@@ -7,6 +7,16 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Middleware\AuthRateLimiter;
 use App\Http\Middleware\ApiRateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/run-migrations', function () {
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        return "Tablolar başarıyla kuruldu! Çıktı: " . Artisan::output();
+    } catch (\Exception $e) {
+        return "Bir hata oluştu: " . $e->getMessage();
+    }
+});
 
 // ==========================================
 // AUTHENTICATION ROUTES (Aggressive Rate Limiting)
