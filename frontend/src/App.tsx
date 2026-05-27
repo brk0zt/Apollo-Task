@@ -4,6 +4,7 @@ import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import Dashboard from './pages/Dashboard';
 
+// Apollo Entry Router Component for Vercel SPA Routing
 const App: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState<'login' | 'register'>('login');
