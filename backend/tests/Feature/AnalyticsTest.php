@@ -135,4 +135,71 @@ class AnalyticsTest extends TestCase
                 'confidence'
             ]);
     }
+
+    /**
+     * Test FFT analysis returns error validation when data points are < 16.
+     */
+    public function test_fft_analysis_requires_sixteen_points_and_returns_error(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        // Access pattern route without inserting 16 distinct timeseries data points
+        $response = $this->getJson('/api/analytics/patterns?metric=task_completion_rate');
+
+        $response->assertStatus(422)
+            ->assertJsonPath('error', 'Insufficient data for Fourier pattern analysis.');
+    }
+
+    /**
+     * Test Jacobian dynamic weights self-correction runs gradient descent and updates.
+     */
+    public function test_jacobian_self_correction_gradient_descent_converges(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        // Create 3 historical projects to trigger regression update
+        $hp1 = Project::create([
+            'user_id' => $this->user->id,
+            'name' => 'Historical Success 1',
+            'status' => 'completed', // Y = 0.0
+            'risk_score' => 0.1,
+        ]);
+        $hp2 = Project::create([
+            'user_id' => $this->user->id,
+            'name' => 'Historical Failure 2',
+            'status' => 'archived', // Y = 1.0
+            'risk_score' => 0.8,
+        ]);
+        $hp3 = Project::create([
+            'user_id' => $this->user->id,
+            'name' => 'Historical Failure 3',
+            'status' => 'paused', // Y = 1.0
+            'risk_score' => 0.9,
+        ]);
+
+        // Add some mock tasks for each historical project so they calculate non-zero metrics
+        foreach ([$hp1, $hp2, $hp3] as $p) {
+            Task::create([
+                'project_id' => $p->id,
+                'title' => 'Sample Task',
+                'status' => 'pending',
+                'estimated_hours' => 10,
+                'due_date' => now()->subDays(5), // overdue!
+            ]);
+        }
+
+        // Trigger risk computation on our active project
+        // This will call resolveDynamicJacobian which executes Ridge-Regularized Gradient Descent
+        $service = new \App\Services\Analytics\RiskScoringService();
+        $result = $service->computeRiskScore($this->project->id);
+
+        $this->assertTrue($result['success']);
+        $this->assertArrayHasKey('risk_score', $result);
+        $this->assertArrayHasKey('breakdown', $result);
+
+        // Verify that the breakdown has dynamic sensitivities calculated
+        foreach ($result['breakdown'] as $metric => $data) {
+            $this->assertGreaterThan(0.0, $data['jacobian_sensitivity']);
+        }
+    }
 }

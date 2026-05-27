@@ -21,7 +21,7 @@ class BenchmarkTest extends TestCase
         $baseVelocity = 1.0; // initial velocity: 1.0 task hours/actual hours
         
         // Model drift representing fatigue: team slows down by 0.5% per day
-        $drift = 0.005; // alpha katsayisi
+        $drift = 0.005; // alpha coefficient
         
         // Naive Forecast calculation (constant velocity assumed)
         // remaining days = R / (base_velocity * 8-hour workday)

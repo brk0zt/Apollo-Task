@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectRequest;
+use App\Http\Resources\ProjectResource;
+use App\Http\Resources\TaskResource;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\EventStream;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +23,7 @@ class ProjectController extends Controller
             ->orderBy('updated_at', 'desc')
             ->paginate(15);
 
-        return response()->json($projects, 200);
+        return ProjectResource::collection($projects);
     }
 
     /**
@@ -50,7 +53,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'message' => 'Project created successfully.',
-            'project' => $project
+            'project' => new ProjectResource($project)
         ], 201);
     }
 
@@ -69,16 +72,19 @@ class ProjectController extends Controller
         // using window functions OVER (PARTITION BY ... ORDER BY ...) as described in the README!
         // This avoids costly user-space array copy/sorting loops in PHP.
         $tasks = DB::select("
-            SELECT id, title, status, priority, estimated_hours, actual_hours, due_date, completed_at,
+            SELECT id, project_id, title, description, status, priority, estimated_hours, actual_hours, due_date, completed_at, created_at, updated_at,
                 ROW_NUMBER() OVER (PARTITION BY project_id ORDER BY priority DESC, created_at) AS rank,
                 LAG(completed_at) OVER (PARTITION BY project_id ORDER BY completed_at) AS prev_completed_at
             FROM tasks
             WHERE project_id = ?
         ", [$id]);
 
+        // Hydrate raw database rows into Eloquent models so TaskResource can map them properly
+        $hydratedTasks = Task::hydrate($tasks);
+
         return response()->json([
-            'project' => $project,
-            'tasks' => $tasks
+            'project' => new ProjectResource($project),
+            'tasks' => TaskResource::collection($hydratedTasks)
         ], 200);
     }
 
@@ -108,7 +114,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'message' => 'Project updated successfully.',
-            'project' => $project
+            'project' => new ProjectResource($project)
         ], 200);
     }
 

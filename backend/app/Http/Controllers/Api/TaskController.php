@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskRequest;
+use App\Http\Resources\TaskResource;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\EventStream;
@@ -31,7 +32,7 @@ class TaskController extends Controller
 
         $tasks = $query->orderBy('priority', 'desc')->get();
 
-        return response()->json($tasks, 200);
+        return TaskResource::collection($tasks);
     }
 
     /**
@@ -72,7 +73,7 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Task created successfully.',
-            'task' => $task
+            'task' => new TaskResource($task)
         ], 201);
     }
 
@@ -105,7 +106,7 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Task updated successfully.',
-            'task' => $task
+            'task' => new TaskResource($task)
         ], 200);
     }
 
@@ -152,7 +153,7 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Task marked as completed.',
-            'task' => $task
+            'task' => new TaskResource($task)
         ], 200);
     }
 

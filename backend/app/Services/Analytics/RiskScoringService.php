@@ -123,6 +123,62 @@ class RiskScoringService
     }
 
     /**
+     * Compute historical metrics for any project (completed, archived, or paused)
+     * based on its original task state and events.
+     */
+    public function computeMetricsForProject(Project $project): array
+    {
+        $tasks = Task::where('project_id', $project->id)->get();
+        $totalTasks = $tasks->count();
+
+        if ($totalTasks === 0) {
+            return [
+                'overdue_ratio'    => 0.0,
+                'velocity_deficit' => 0.0,
+                'priority_density' => 0.0,
+                'inactivity_decay' => 0.0,
+                'backlog_weight'   => 0.0
+            ];
+        }
+
+        $incompleteTasks = $tasks->where('status', '!=', 'completed');
+        $completedTasks = $tasks->where('status', 'completed');
+
+        // Metric 1: Overdue Task Ratio
+        $overdueCount = 0;
+        foreach ($incompleteTasks as $task) {
+            if ($task->due_date && Carbon::parse($task->due_date)->isPast()) {
+                $overdueCount++;
+            }
+        }
+        $m1 = $incompleteTasks->count() > 0 ? (float) ($overdueCount / $incompleteTasks->count()) : 0.0;
+
+        // Metric 2: Velocity Deficit
+        $m2 = $this->calculateVelocityDeficit($completedTasks);
+
+        // Metric 3: Priority Density
+        $prioritySum = 0.0;
+        foreach ($incompleteTasks as $task) {
+            $prioritySum += ($task->priority * 0.2);
+        }
+        $m3 = $incompleteTasks->count() > 0 ? (float) ($prioritySum / $incompleteTasks->count()) : 0.0;
+
+        // Metric 4: Inactivity Decay
+        $m4 = $this->calculateInactivityDecay($project->id);
+
+        // Metric 5: Backlog Weight
+        $m5 = (float) ($incompleteTasks->count() / $totalTasks);
+
+        return [
+            'overdue_ratio'    => $m1,
+            'velocity_deficit' => $m2,
+            'priority_density' => $m3,
+            'inactivity_decay' => $m4,
+            'backlog_weight'   => $m5
+        ];
+    }
+
+    /**
      * Dynamically resolve Jacobian sensitivities using historical project regressions.
      * Computes correlation of each metric to project failures (paused/archived states)
      * to self-correct weights dynamically as project history grows.
@@ -138,39 +194,70 @@ class RiskScoringService
         }
 
         $failedStates = ['archived', 'paused']; // Proxy for failed/abandoned projects
-        $correlations = [];
-        $totalCorrelation = 0.0;
+        $projectData = [];
 
-        foreach ($this->baselineJacobian as $key => $priorWeight) {
-            // Run a simple covariance estimator to find correlation of metric to failure
-            $covarianceSum = 0.0;
-            $count = 0;
+        foreach ($history as $proj) {
+            $projectData[] = [
+                'metrics' => $this->computeMetricsForProject($proj),
+                'outcome' => in_array($proj->status, $failedStates) ? 1.0 : 0.0
+            ];
+        }
 
-            foreach ($history as $proj) {
-                $isFailed = in_array($proj->status, $failedStates) ? 1.0 : 0.0;
-                
-                // Get historical metric proxy or fallback to project risk score delta
-                $historicalMetricValue = $proj->risk_score * $priorWeight; 
-                
-                $covarianceSum += ($historicalMetricValue * $isFailed);
-                $count++;
+        $N = count($projectData);
+        $w = $this->baselineJacobian; // Start weights at baseline priors
+        $learningRate = 0.05;
+        $lambda = 0.15; // Regularization coefficient to maintain stability under low N
+        $iterations = 100;
+
+        // Execute batch gradient descent to fit multi-metric sensitivities
+        for ($iter = 0; $iter < $iterations; $iter++) {
+            $gradients = [
+                'overdue_ratio'    => 0.0,
+                'velocity_deficit' => 0.0,
+                'priority_density' => 0.0,
+                'inactivity_decay' => 0.0,
+                'backlog_weight'   => 0.0
+            ];
+
+            foreach ($projectData as $data) {
+                $metrics = $data['metrics'];
+                $Y = $data['outcome'];
+
+                // Compute prediction: w . m
+                $prediction = 0.0;
+                foreach ($w as $k => $val) {
+                    $prediction += $val * $metrics[$k];
+                }
+
+                $error = $prediction - $Y;
+
+                // Accumulate gradients
+                foreach ($w as $k => $val) {
+                    $gradients[$k] += $error * $metrics[$k];
+                }
             }
 
-            $covariance = $count > 0 ? ($covarianceSum / $count) : 0.0;
-            
-            // Adjust baseline prior weight dynamically: posterior = prior * (1.0 + covariance)
-            $adjustedWeight = $priorWeight * (1.0 + $covariance);
-            $correlations[$key] = $adjustedWeight;
-            $totalCorrelation += $adjustedWeight;
+            // Average gradients and apply L2 prior regularization
+            foreach ($w as $k => $val) {
+                $gradients[$k] = ($gradients[$k] / $N) + $lambda * ($val - $this->baselineJacobian[$k]);
+                // Update weights
+                $w[$k] -= $learningRate * $gradients[$k];
+                // Keep weight strictly positive to represent positive risk sensitivity
+                $w[$k] = max(0.01, $w[$k]);
+            }
         }
 
-        // Normalize weights so they strictly sum to exactly 1.0 (maintaining Taylor convergence)
-        $dynamicJacobian = [];
-        foreach ($correlations as $key => $weight) {
-            $dynamicJacobian[$key] = $totalCorrelation > 0 ? ($weight / $totalCorrelation) : $this->baselineJacobian[$key];
+        // Normalize weights so they strictly sum to 1.0 (Taylor boundary condition)
+        $sum = array_sum($w);
+        if ($sum > 0) {
+            foreach ($w as $k => $val) {
+                $w[$k] = $val / $sum;
+            }
+        } else {
+            $w = $this->baselineJacobian;
         }
 
-        return $dynamicJacobian;
+        return $w;
     }
 
     /**
