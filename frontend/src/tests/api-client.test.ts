@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import apiClient from '../api/client';
-import axios from 'axios';
 
 describe('Vite API Client Interceptors', () => {
   beforeEach(() => {
@@ -18,8 +17,8 @@ describe('Vite API Client Interceptors', () => {
 
     // Grab request interceptor from axios instance
     // @ts-expect-error - testing private interceptor array
-    const requestHandler = apiClient.interceptors.request.handlers[0].fulfilled;
-    const resolvedConfig = requestHandler(mockConfig);
+    const requestHandler = apiClient.interceptors.request.handlers[0].fulfilled as any;
+    const resolvedConfig = (await requestHandler(mockConfig as any)) as any;
 
     expect(resolvedConfig.headers.Authorization).toBe('Bearer mocked_sanctum_session_token_xyz');
   });
@@ -41,7 +40,7 @@ describe('Vite API Client Interceptors', () => {
 
     // Grab response interceptor from axios instance
     // @ts-expect-error - testing private interceptor array
-    const errorHandler = apiClient.interceptors.response.handlers[0].rejected;
+    const errorHandler = apiClient.interceptors.response.handlers[0].rejected as any;
 
     await expect(errorHandler(mockError)).rejects.toEqual(mockError);
 
@@ -71,7 +70,7 @@ describe('Vite API Client Interceptors', () => {
 
     // Grab response interceptor from axios instance
     // @ts-expect-error - testing private interceptor array
-    const errorHandler = apiClient.interceptors.response.handlers[0].rejected;
+    const errorHandler = apiClient.interceptors.response.handlers[0].rejected as any;
 
     await expect(errorHandler(mockError)).rejects.toEqual(mockError);
 

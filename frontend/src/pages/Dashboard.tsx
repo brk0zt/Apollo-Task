@@ -96,7 +96,7 @@ export const Dashboard: React.FC = () => {
   
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskEst, setNewTaskEst] = useState('');
-  const [newTaskPriority, setNewTaskPriority] = useState('2');
+  const [newTaskPriority] = useState('2');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
 
   const [taskActualHours, setTaskActualHours] = useState<Record<number, string>>({});
