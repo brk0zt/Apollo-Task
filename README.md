@@ -48,13 +48,13 @@ php artisan db:seed          # optional demo data
 
 php artisan serve            # runs on http://localhost:8000
 
-# crontab -e ile ekle (her dakika — Laravel Scheduler'ın standart entry'si)
+# Append to system cron configuration (every minute - standard Laravel Scheduler entry)
 * * * * * cd /var/www/apollo-energy/backend && php artisan schedule:run >> /dev/null 2>&1
 
-# Schedule doğrulaması (Laravel scheduler'ın neyi ne zaman çalıştırdığını gösterir)
+# Verify scheduler configuration and task execution windows
 php artisan schedule:list
 
-# Demo / CI ortamlarında manuel tetikleme (scheduler kurulamadığında)
+# Manually trigger aggregations for demo or CI environments (when system cron is unavailable)
 php artisan analytics:aggregate
 ```
 
