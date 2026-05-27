@@ -16,11 +16,10 @@ describe('Vite API Client Interceptors', () => {
     };
 
     // Grab request interceptor from axios instance
-    // @ts-expect-error - testing private interceptor array
-    const requestHandler = apiClient.interceptors.request.handlers[0].fulfilled as any;
-    const resolvedConfig = (await requestHandler(mockConfig as any)) as any;
+    const requestHandler = (apiClient.interceptors.request as any).handlers[0].fulfilled;
+    const resolvedConfig = await requestHandler(mockConfig as any);
 
-    expect(resolvedConfig.headers.Authorization).toBe('Bearer mocked_sanctum_session_token_xyz');
+    expect((resolvedConfig as any).headers.Authorization).toBe('Bearer mocked_sanctum_session_token_xyz');
   });
 
   it('should clear localStorage and trigger apollo_unauthorized event on 401 response', async () => {
@@ -39,10 +38,9 @@ describe('Vite API Client Interceptors', () => {
     };
 
     // Grab response interceptor from axios instance
-    // @ts-expect-error - testing private interceptor array
-    const errorHandler = apiClient.interceptors.response.handlers[0].rejected as any;
+    const errorHandler = (apiClient.interceptors.response as any).handlers[0].rejected;
 
-    await expect(errorHandler(mockError)).rejects.toEqual(mockError);
+    await expect(errorHandler(mockError as any)).rejects.toEqual(mockError);
 
     // Assert cache clearance
     expect(localStorage.getItem('apollo_token')).toBeNull();
@@ -69,10 +67,9 @@ describe('Vite API Client Interceptors', () => {
     };
 
     // Grab response interceptor from axios instance
-    // @ts-expect-error - testing private interceptor array
-    const errorHandler = apiClient.interceptors.response.handlers[0].rejected as any;
+    const errorHandler = (apiClient.interceptors.response as any).handlers[0].rejected;
 
-    await expect(errorHandler(mockError)).rejects.toEqual(mockError);
+    await expect(errorHandler(mockError as any)).rejects.toEqual(mockError);
 
     // Assert custom rate limit event dispatching
     expect(dispatchEventSpy).toHaveBeenCalled();
