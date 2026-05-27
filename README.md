@@ -577,6 +577,12 @@ Two separate bucket configurations are implemented at the database schema and mi
 
 This physical separation of rate limit states in the schema completely prevents rate-limiting starvation attacks where a brute-force attacker on the auth endpoints exhausts the bucket capacity of valid API users.
 
+*Lock Contention & Concurrency Trade-off:*
+To guarantee perfect, distributed race-condition prevention without Redis, we utilize database row-level locking (`FOR UPDATE`) during the bucket state transition in PostgreSQL.
+- Under high-concurrency brute-force attacks targeting a *single user account* (parallel login attempts on the same email), this creates a brief database lock queue (contention) for that specific user row.
+- This is a conscious engineering trade-off: it guarantees mathematical rate-limiting correctness and absolute protection for that account at the cost of transient latency spikes for that specific user row during extreme parallel attacks.
+- We mitigate wide-scale lock exhaustion (denial of service on the database) by applying a pre-routing IP-based bucket limit (`auth_limit:ip:`) on unauthenticated auth routes, which blocks botnet spammers at the network edge (`rate_limits` table primary index) before they can lock valid user records.
+
 ### ADR-005: PostgreSQL window functions over PHP-side processing
 
 **Decision:** Use `ROW_NUMBER()`, `LAG()`, `RANK()` in SQL.

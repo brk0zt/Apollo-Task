@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\TaskController;
 use App\Http\Middleware\AuthRateLimiter;
 use App\Http\Middleware\ApiRateLimiter;
 use Illuminate\Support\Facades\Route;
@@ -34,11 +36,11 @@ Route::middleware(['auth:sanctum', ApiRateLimiter::class])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
 
     // Projects CRUD
-    // Route::apiResource('projects', ProjectController::class);
+    Route::apiResource('projects', ProjectController::class);
     
     // Tasks CRUD
-    // Route::apiResource('projects.tasks', TaskController::class);
-    // Route::patch('/tasks/{id}/complete', [TaskController::class, 'complete']);
+    Route::apiResource('projects.tasks', TaskController::class);
+    Route::patch('/tasks/{id}/complete', [TaskController::class, 'complete']);
     
     // Analytics
     Route::get('/analytics/forecast/{project_id}', [AnalyticsController::class, 'forecast']);
