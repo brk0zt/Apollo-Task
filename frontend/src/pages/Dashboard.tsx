@@ -425,7 +425,7 @@ export const Dashboard: React.FC = () => {
                 type="submit"
                 className="w-full py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-xs active:scale-[0.98] transition-all duration-200"
               >
-                Add Project (POST /api/projects)
+                Add Project
               </button>
             </form>
 
