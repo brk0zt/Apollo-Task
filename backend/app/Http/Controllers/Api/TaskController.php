@@ -11,7 +11,7 @@ use App\Models\EventStream;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class TaskController extends Controller
+class TaskController 
 {
     /**
      * Display a listing of tasks for a project.

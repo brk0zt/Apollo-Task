@@ -12,7 +12,7 @@ use App\Models\EventStream;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ProjectController extends Controller
+class ProjectController
 {
     /**
      * Display a listing of projects (paginated and optimized with composite indexes).

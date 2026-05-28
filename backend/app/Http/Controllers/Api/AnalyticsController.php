@@ -9,7 +9,7 @@ use App\Services\Analytics\RiskScoringService;
 use App\Models\AnalyticsTimeseries;
 use Illuminate\Http\Request;
 
-class AnalyticsController extends Controller
+class AnalyticsController
 {
     /**
      * Get Newton-Raphson velocity convergence project completion forecast.
