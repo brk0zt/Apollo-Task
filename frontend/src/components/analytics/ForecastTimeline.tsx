@@ -35,9 +35,8 @@ export const ForecastTimeline: React.FC<ForecastTimelineProps> = ({ data }) => {
             {data.estimated_completion_date}
           </span>
           <span className="text-amber-400 text-xs font-medium block mt-2">
-            Remaining Time: <strong className="text-white">{data.forecasted_remaining_days.toFixed(1)} Days</strong>
+            Remaining Time: <strong className="text-white">{(data.forecasted_remaining_days ?? 0).toFixed(1)} Days</strong>
           </span>
-
           {/* Confidence Indicator */}
           <div className="mt-6 space-y-1.5">
             <div className="flex justify-between items-center text-[10px] text-white/50">
@@ -63,7 +62,7 @@ export const ForecastTimeline: React.FC<ForecastTimelineProps> = ({ data }) => {
                 Adjusted Velocity ($v_0$)
               </span>
               <span className="text-lg font-bold text-white block mt-1">
-                {data.base_velocity.toFixed(3)}
+                {(data.base_velocity ?? 0).toFixed(3)}
               </span>
               <span className="text-white/40 text-[9px] block mt-0.5">Ratio per Task</span>
             </div>
@@ -73,7 +72,7 @@ export const ForecastTimeline: React.FC<ForecastTimelineProps> = ({ data }) => {
                 Velocity Drift ($\alpha$)
               </span>
               <span className="text-lg font-bold text-white block mt-1">
-                {data.velocity_drift_coefficient.toFixed(5)}
+                {(data.velocity_drift_coefficient ?? 0).toFixed(5)}
               </span>
               <span className="text-white/40 text-[9px] block mt-0.5">Daily Acceleration Change</span>
             </div>
@@ -83,7 +82,7 @@ export const ForecastTimeline: React.FC<ForecastTimelineProps> = ({ data }) => {
                 Remaining Workload ($R$)
               </span>
               <span className="text-lg font-bold text-white block mt-1">
-                {data.total_estimated_remaining_hours.toFixed(1)} hrs
+                {(data.total_estimated_remaining_hours ?? 0).toFixed(1)} hrs
               </span>
               <span className="text-white/40 text-[9px] block mt-0.5">Remaining Planned Time</span>
             </div>
