@@ -56,45 +56,75 @@ export const ForecastTimeline: React.FC<ForecastTimelineProps> = ({ data }) => {
         <div className="space-y-4">
           <h4 className="font-semibold text-white text-sm">Convergence and Velocity Parameters</h4>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3.5 rounded-lg bg-white/5 border border-white/5">
-              <span className="text-white/30 text-[10px] uppercase font-bold tracking-wider block">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
+            <div className="p-3 sm:p-3.5 rounded-lg bg-white/5 border border-white/5 min-w-0 flex flex-col justify-between">
+              <span 
+                className="text-white/30 text-[10px] uppercase font-bold tracking-wider block break-words whitespace-normal leading-tight"
+                title="Adjusted Velocity (v0)"
+              >
                 Adjusted Velocity ($v_0$)
               </span>
-              <span className="text-lg font-bold text-white block mt-1">
+              <span className="text-base sm:text-lg font-bold text-white block mt-1 truncate" title={(data.base_velocity ?? 0).toFixed(3)}>
                 {(data.base_velocity ?? 0).toFixed(3)}
               </span>
-              <span className="text-white/40 text-[9px] block mt-0.5">Ratio per Task</span>
+              <span 
+                className="text-white/40 text-[9px] block mt-0.5 break-words whitespace-normal leading-tight" 
+                title="Ratio per Task"
+              >
+                Ratio per Task
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-white/5 border border-white/5">
-              <span className="text-white/30 text-[10px] uppercase font-bold tracking-wider block">
+            <div className="p-3 sm:p-3.5 rounded-lg bg-white/5 border border-white/5 min-w-0 flex flex-col justify-between">
+              <span 
+                className="text-white/30 text-[10px] uppercase font-bold tracking-wider block break-words whitespace-normal leading-tight"
+                title="Velocity Drift (alpha)"
+              >
                 Velocity Drift ($\alpha$)
               </span>
-              <span className="text-lg font-bold text-white block mt-1">
+              <span className="text-base sm:text-lg font-bold text-white block mt-1 truncate" title={(data.velocity_drift_coefficient ?? 0).toFixed(5)}>
                 {(data.velocity_drift_coefficient ?? 0).toFixed(5)}
               </span>
-              <span className="text-white/40 text-[9px] block mt-0.5">Daily Acceleration Change</span>
+              <span 
+                className="text-white/40 text-[9px] block mt-0.5 break-words whitespace-normal leading-tight" 
+                title="Daily Acceleration Change"
+              >
+                Daily Acceleration Change
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-white/5 border border-white/5">
-              <span className="text-white/30 text-[10px] uppercase font-bold tracking-wider block">
+            <div className="p-3 sm:p-3.5 rounded-lg bg-white/5 border border-white/5 min-w-0 flex flex-col justify-between">
+              <span 
+                className="text-white/30 text-[10px] uppercase font-bold tracking-wider block break-words whitespace-normal leading-tight"
+                title="Remaining Workload (R)"
+              >
                 Remaining Workload ($R$)
               </span>
-              <span className="text-lg font-bold text-white block mt-1">
+              <span className="text-base sm:text-lg font-bold text-white block mt-1 truncate" title={`${(data.total_estimated_remaining_hours ?? 0).toFixed(1)} hrs`}>
                 {(data.total_estimated_remaining_hours ?? 0).toFixed(1)} hrs
               </span>
-              <span className="text-white/40 text-[9px] block mt-0.5">Remaining Planned Time</span>
+              <span 
+                className="text-white/40 text-[9px] block mt-0.5 break-words whitespace-normal leading-tight" 
+                title="Remaining Planned Time"
+              >
+                Remaining Planned Time
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-white/5 border border-white/5">
-              <span className="text-white/30 text-[10px] uppercase font-bold tracking-wider block">
+            <div className="p-3 sm:p-3.5 rounded-lg bg-white/5 border border-white/5 min-w-0 flex flex-col justify-between">
+              <span 
+                className="text-white/30 text-[10px] uppercase font-bold tracking-wider block break-words whitespace-normal leading-tight"
+                title="Convergence (NR Iter)"
+              >
                 Convergence (NR Iter)
               </span>
-              <span className="text-lg font-bold text-emerald-400 block mt-1">
+              <span className="text-base sm:text-lg font-bold text-emerald-400 block mt-1 truncate" title={`${data.newton_raphson_iterations || 3} Iterations`}>
                 {data.newton_raphson_iterations || 3} Iterations
               </span>
-              <span className="text-white/40 text-[9px] block mt-0.5">
+              <span 
+                className="text-white/40 text-[9px] block mt-0.5 break-words whitespace-normal leading-tight"
+                title={data.newton_raphson_converged ? 'Mathematically Stable' : 'Converging'}
+              >
                 {data.newton_raphson_converged ? 'Mathematically Stable' : 'Converging'}
               </span>
             </div>

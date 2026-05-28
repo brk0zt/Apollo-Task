@@ -586,45 +586,55 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Core Charts Matrix */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Column 1 & 2: FFT Pattern Analysis Area */}
-          <div className="lg:col-span-2 space-y-8">
+        {selectedProjectId ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Metric Selection Switcher */}
-            <div className="flex items-center space-x-3 p-1.5 rounded-xl bg-white/5 border border-white/5 self-start w-fit">
-              <button
-                onClick={() => setSelectedMetric('task_completion_rate')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                  selectedMetric === 'task_completion_rate'
-                    ? 'bg-amber-500 text-slate-950 shadow-md'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Task Completion Rate
-              </button>
-              <button
-                onClick={() => setSelectedMetric('task_creation_rate')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                  selectedMetric === 'task_creation_rate'
-                    ? 'bg-amber-500 text-slate-950 shadow-md'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Task Creation Rate
-              </button>
+            {/* Column 1 & 2: FFT Pattern Analysis Area */}
+            <div className="lg:col-span-2 space-y-8">
+              
+              {/* Metric Selection Switcher */}
+              <div className="flex items-center space-x-3 p-1.5 rounded-xl bg-white/5 border border-white/5 self-start w-fit">
+                <button
+                  onClick={() => setSelectedMetric('task_completion_rate')}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                    selectedMetric === 'task_completion_rate'
+                      ? 'bg-amber-500 text-slate-950 shadow-md'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  Task Completion Rate
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('task_creation_rate')}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                    selectedMetric === 'task_creation_rate'
+                      ? 'bg-amber-500 text-slate-950 shadow-md'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  Task Creation Rate
+                </button>
+              </div>
+
+              <FFTChart data={fftData} />
+              
+              <ForecastTimeline data={forecastData} />
             </div>
 
-            <FFTChart data={fftData} />
-            
-            <ForecastTimeline data={forecastData} />
+            {/* Column 3: Jacobian Risk Scorer Widget */}
+            <div className="lg:col-span-1">
+              <RiskGauge data={riskData} />
+            </div>
           </div>
-
-          {/* Column 3: Jacobian Risk Scorer Widget */}
-          <div className="lg:col-span-1">
-            <RiskGauge data={riskData} />
+        ) : (
+          <div className="p-12 rounded-2xl bg-white/5 border border-white/10 text-center space-y-4 shadow-xl backdrop-blur-md">
+            <span className="text-5xl block animate-bounce duration-1000">📊</span>
+            <h3 className="text-xl font-bold text-white">Select a Project to View Analytical Reports</h3>
+            <p className="text-white/40 text-sm max-w-md mx-auto leading-relaxed">
+              Real-time Fast Fourier Transforms, EWMA completion timelines, and multi-metric Jacobian risk calculations will be plotted here once a project is active.
+            </p>
           </div>
-        </div>
+        )}
 
       </main>
 
