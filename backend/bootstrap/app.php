@@ -3,23 +3,31 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Middleware\HandleCors;
-use App\Http\Middleware\TrustProxies;
+use Illuminate\Http\Request;
+use Illuminate\Auth\AuthenticationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
+        web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // TrustProxies is required for Railway's reverse proxy to work correctly
-        $middleware->prepend(TrustProxies::class);
-
-        // HandleCors MUST be in the global middleware stack so it can
-        // intercept OPTIONS preflight requests before route matching.
-        // Without this, browsers block all cross-origin requests.
-        $middleware->prepend(HandleCors::class);
-    })
-    ->withExceptions(function (Exceptions $exceptions) {
         //
     })
-    ->create();
+    ->withExceptions(function (Exceptions $exceptions) {
+        
+        // 1. Yetki hatalarını "login" rotasına yönlendirmek yerine 401 JSON döndür
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+        });
+
+        // 2. Diğer tüm çökme/bulunamadı hatalarında zorla JSON formatında yanıt ver
+        $exceptions->shouldRenderJsonWhen(function (Request $request) {
+            return $request->is('api/*');
+        });
+        
+    })->create();
