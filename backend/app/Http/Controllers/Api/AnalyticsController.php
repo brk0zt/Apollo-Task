@@ -9,20 +9,14 @@ use App\Services\Analytics\RiskScoringService;
 use App\Models\AnalyticsTimeseries;
 use Illuminate\Http\Request;
 
-class AnalyticsController
+class AnalyticsController extends Controller
 {
     /**
      * Get Newton-Raphson velocity convergence project completion forecast.
      */
     public function forecast(int $projectId, ProjectForecastService $service)
     {
-        $result = $service->forecastCompletion($projectId);
-
-        if (!$result['success']) {
-            return response()->json(['error' => $result['message']], 404);
-        }
-
-        return response()->json($result, 200);
+        return response()->json($service->forecastCompletion($projectId), 200);
     }
 
     /**
@@ -30,13 +24,7 @@ class AnalyticsController
      */
     public function risk(int $projectId, RiskScoringService $service)
     {
-        $result = $service->computeRiskScore($projectId);
-
-        if (!$result['success']) {
-            return response()->json(['error' => $result['message']], 404);
-        }
-
-        return response()->json($result, 200);
+        return response()->json($service->computeRiskScore($projectId), 200);
     }
 
     /**
@@ -47,13 +35,7 @@ class AnalyticsController
         $userId = $request->user()->id;
         $metric = $request->query('metric', 'task_completion_rate');
 
-        $result = $service->analyzePattern($userId, $metric);
-
-        if (!$result['success']) {
-            return response()->json(['error' => $result['message']], 422);
-        }
-
-        return response()->json($result, 200);
+        return response()->json($service->analyzePattern($userId, $metric), 200);
     }
 
     /**
