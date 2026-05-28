@@ -674,5 +674,5 @@ apollo-energy/
 
 ---
 
-*Built for Apollo Global Solutions — Energy Asset Management Platform*
+*Built for Apollo Green Solutions — Energy Asset Management Platform*
 *Architecture decisions grounded in algorithmic complexity analysis, not framework defaults.*
